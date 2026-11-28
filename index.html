@@ -1023,6 +1023,39 @@ body.poster-a4 .nx-cf .mode-unit{white-space:nowrap!important}
 body.poster-a4 .nx-delivery{grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important}
 body.poster-a4 .nx-dbody .barge-unload-range{font-size:6pt!important}
 body.poster-a4 .barge-unload-range,body.poster-a4 .nx-dbody .barge-unload-range{white-space:normal!important;font-size:6.5pt!important;line-height:1.25!important}
+
+/* ===== v38 — Coal Unloaded: satu tanggal di header kartu (seperti Coal Barge) ===== */
+@media screen and (min-width:701px){.nx-delivery{grid-template-columns:minmax(0,2.6fr) minmax(0,1fr)}}
+body.poster-a4 .nx-delivery{grid-template-columns:minmax(0,2.6fr) minmax(0,1fr)!important}
+.nx-unl .nx-tt .nx-date{white-space:nowrap}
+.nx-unl .barge-total-only{font-size:34px}
+@media screen and (min-width:701px){.nx-unl .barge-total-only{font-size:34px}.nx-unl .barge-total-only small{font-size:16px}}
+body.poster-a4 .nx-unl .barge-total-only{font-size:16pt!important}
+body.poster-a4 .nx-unl .subpanel-title{white-space:nowrap!important;gap:1mm!important}
+body.poster-a4 .nx-unl .subpanel-title>span:first-child{font-size:7.5pt!important}
+body.poster-a4 .nx-unl .nx-date{font-size:5.5pt!important}
+
+/* ===== v39 — batas panel Coal Barge / Coal Unloaded disejajarkan dengan tile Coal Stock ===== */
+/* Coal Stock: padding 14px, jarak antar tile 12px, 4 kolom sama lebar (w).
+   Coal Barge berakhir tepat di sisi kanan tile GAR 4200 (= 3w + 38px); Coal Unloaded mulai tepat di sisi kiri tile Total Stock. */
+@media screen and (min-width:701px){
+.nx-delivery{grid-template-columns:calc((100% - 64px)*.75 + 38px) minmax(0,1fr);gap:12px}
+.nx-barge .nx-dbody{padding:10px 14px 11px}
+.nx-unl .nx-dbody{padding:10px 14px 11px}
+.nx-barge .barge-grid{gap:12px}
+.nx-unl .subpanel-title{gap:4px;padding-left:10px;padding-right:10px}
+.nx-unl .subpanel-title>span:first-child{font-size:14px}
+.nx-unl .nx-date{font-size:11px}
+}
+/* A4: padding stock 1.6mm, gap 1.5mm */
+body.poster-a4 .nx-delivery{grid-template-columns:calc((100% - 7.7mm)*.75 + 4.6mm) minmax(0,1fr)!important;gap:1.5mm!important}
+body.poster-a4 .nx-barge .nx-dbody,body.poster-a4 .nx-unl .nx-dbody{padding:1.2mm 1.6mm 1.4mm!important}
+body.poster-a4 .nx-barge .barge-grid{gap:1.5mm!important}
+@media screen and (min-width:701px){
+.nx-unl .subpanel-title{white-space:nowrap;padding-left:8px;padding-right:8px;gap:3px}
+.nx-unl .subpanel-title>span:first-child{font-size:13px;white-space:nowrap}
+.nx-unl .nx-date{font-size:10.5px;white-space:nowrap}
+}
 </style>
 </head>
 <body>
@@ -1151,7 +1184,7 @@ body.poster-a4 .barge-unload-range,body.poster-a4 .nx-dbody .barge-unload-range{
       <div class="nx-dbody"><div class="barge-grid" id="bargeStatusGrid"></div></div>
      </div>
      <div class="subpanel nx-unl" aria-label="Coal Unloaded">
-      <div class="subpanel-title nx-tt purple"><span>🚛 &nbsp;COAL UNLOADED</span></div>
+      <div class="subpanel-title nx-tt purple"><span>🚛 &nbsp;COAL UNLOADED</span><span class="nx-date" id="unloadPosterDate">Belum diisi</span></div>
       <div class="nx-dbody"><div class="barge-grid" id="unloadStatusGrid"></div></div>
      </div>
     </div>
@@ -1677,13 +1710,11 @@ function build(){
     return;
    }
    if(ty==='unloadcoal'){
-    const _u=bargeData.unload||{ton:'',from:'',to:''};
+    const _u=bargeData.unload||{ton:'',date:''};
     n++;
     t+='<tr class="barge-unload-row"><td class="rn">'+n+'</td><td class="pl">Coal Unloaded</td><td><input inputmode="decimal" aria-label="Jumlah unloaded coal" placeholder="Jumlah unloaded (mis. 13.746 atau 1.250,5)" value="'+escBarge(_u.ton||'')+'" oninput="updateBargeUnload(\'ton\',this.value)" onblur="fixUnloadTon(this)"></td><td class="un">ton</td></tr>';
     n++;
-    t+='<tr class="barge-unload-row"><td class="rn">'+n+'</td><td class="pl">Periode Dari (tgl &amp; jam)</td><td><input type="datetime-local" aria-label="Unloaded dari tanggal dan jam" value="'+escBarge(_u.from||'')+'" oninput="updateBargeUnload(\'from\',this.value)" onchange="updateBargeUnload(\'from\',this.value)"></td><td class="un">WITA</td></tr>';
-    n++;
-    t+='<tr class="barge-unload-row"><td class="rn">'+n+'</td><td class="pl">Periode Sampai (tgl &amp; jam)</td><td><input type="datetime-local" aria-label="Unloaded sampai tanggal dan jam" value="'+escBarge(_u.to||'')+'" oninput="updateBargeUnload(\'to\',this.value)" onchange="updateBargeUnload(\'to\',this.value)"></td><td class="un">WITA</td></tr>';
+    t+='<tr class="barge-unload-row"><td class="rn">'+n+'</td><td class="pl">Tanggal Coal Unloaded</td><td><input type="date" aria-label="Tanggal Coal Unloaded" value="'+escBarge(_u.date||'')+'" oninput="updateBargeUnload(\'date\',this.value)" onchange="updateBargeUnload(\'date\',this.value)"></td><td class="un">tgl</td></tr>';
     return;
    }
    if(ty==='barge'){
@@ -1918,9 +1949,9 @@ window.downloadPosterPNG=downloadPosterPNG;
 /* Coal Barge Status */
 const BARGE_KEY='cfpp_coal_barge_status_v1';
 const BARGE_TYPES=[['unloading','UNLOADING'],['anchorage','ANCHORAGE'],['sailing','SAILING']];
-let bargeData={date:'',time:'',unload:{ton:'',from:'',to:''},unloading:[],anchorage:[],sailing:[]};
+let bargeData={date:'',time:'',unload:{ton:'',date:''},unloading:[],anchorage:[],sailing:[]};
 function escBarge(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function loadBarges(){try{const d=JSON.parse(localStorage.getItem(BARGE_KEY)||'null');if(d&&typeof d==='object'){bargeData.date=String(d.date||'');bargeData.time=String(d.time||'');{const u=(d.unload&&typeof d.unload==='object')?d.unload:{};bargeData.unload={ton:String(u.ton||''),from:String(u.from||''),to:String(u.to||'')}}BARGE_TYPES.forEach(([k])=>bargeData[k]=Array.isArray(d[k])?d[k]:[])}}catch(e){}}
+function loadBarges(){try{const d=JSON.parse(localStorage.getItem(BARGE_KEY)||'null');if(d&&typeof d==='object'){bargeData.date=String(d.date||'');bargeData.time=String(d.time||'');{const u=(d.unload&&typeof d.unload==='object')?d.unload:{};bargeData.unload={ton:String(u.ton||''),date:String(u.date||String(u.from||'').slice(0,10))}}BARGE_TYPES.forEach(([k])=>bargeData[k]=Array.isArray(d[k])?d[k]:[])}}catch(e){}}
 function saveBarges(){try{localStorage.setItem(BARGE_KEY,JSON.stringify(bargeData))}catch(e){console.warn('Penyimpanan lokal tidak tersedia:',e)}renderBarges()}
 function tonBarge(v){const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)&&n>0?n.toLocaleString('id-ID')+' ton':'-'}
 function syncBargeDateTimeFromInputs(){const d=document.querySelector('.barge-date-row input[type=date]');const t=document.querySelector('.barge-time-row input[type=time]');if(d&&d.value!==bargeData.date)bargeData.date=String(d.value||'');if(t&&t.value!==bargeData.time)bargeData.time=String(t.value||'');try{localStorage.setItem(BARGE_KEY,JSON.stringify(bargeData))}catch(e){}}
@@ -1929,9 +1960,9 @@ function bargeGarParts(arr){const m=new Map();let none=0;(arr||[]).forEach(x=>{c
 function bargeGarHtml(arr){const p=bargeGarParts(arr);return '<div class="barge-gar">'+(p.length?p.map(([k,n])=>'<span class="gar-chip">'+escBarge(k)+'<b>\u00d7'+n+'</b></span>').join(''):'<span class="gar-none">\u2013</span>')+'</div>'}
 function renderBarges(){renderUnloaded();syncBargeDateDisplay();const grid=document.getElementById('bargeStatusGrid');if(!grid)return;const _cards=BARGE_TYPES.map(([k,label])=>{const a=bargeData[k]||[];return '<div class="barge-card '+(k==='anchorage'?'anchor':k==='sailing'?'sailing':'')+'"><div class="barge-card-head"><div class="barge-card-title">'+label+'</div></div><div class="barge-total-only">'+a.length+'<small> kapal</small></div>'+bargeGarHtml(a)+'</div>'});grid.innerHTML=_cards.join('')}
 function fmtBargeDT(v){const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(v||''));return m?m[3]+'/'+m[2]+'/'+m[1]+' '+m[4]+'.'+m[5]:''}
-function renderUnloaded(){const g=document.getElementById('unloadStatusGrid');if(!g)return;const u=bargeData.unload||{};const n=ev(u.ton);const has=String(u.ton||'').trim()!==''&&Number.isFinite(n);const a=fmtBargeDT(u.from),b=fmtBargeDT(u.to);const nb=x=>String(x).replace(/ /g,'\u00a0');const rng=(a||b)?(nb(a||'?')+'\u00a0\u2192 '+nb(b||'?')+'\u00a0WITA'):'Periode belum diisi';g.innerHTML='<div class="barge-card unload"><div class="barge-total-only">'+(has?n.toLocaleString('id-ID',{maximumFractionDigits:2}):'-')+'<small> ton</small></div><span class="barge-unload-range">'+escBarge(rng)+'</span></div>'}
+function renderUnloaded(){const g=document.getElementById('unloadStatusGrid');if(!g)return;const u=bargeData.unload||{};const n=ev(u.ton);const has=String(u.ton||'').trim()!==''&&Number.isFinite(n);g.innerHTML='<div class="barge-card unload"><div class="barge-total-only">'+(has?n.toLocaleString('id-ID',{maximumFractionDigits:2}):'-')+'<small> ton</small></div></div>';const de=document.getElementById('unloadPosterDate');if(de)de.textContent=u.date?('▣  '+showDate(u.date)):'Belum diisi'}
 function fixUnloadTon(el){const t=String(el.value||'').trim();if(!t){el.classList.remove('bad');return}const v=ev(t);if(Number.isFinite(v)&&v>=0){el.classList.remove('bad');el.value=numStr(v);updateBargeUnload('ton',el.value)}else el.classList.add('bad')}
-function updateBargeUnload(f,v){if(!bargeData.unload)bargeData.unload={ton:'',from:'',to:''};bargeData.unload[f]=String(v||'');saveBarges()}
+function updateBargeUnload(f,v){if(!bargeData.unload)bargeData.unload={ton:'',date:''};bargeData.unload[f]=String(v||'');saveBarges()}
 function renderBargeEditor(){const el=document.getElementById('bargeEditorBody');if(!el)return;el.innerHTML=BARGE_TYPES.map(([k,label])=>'<div class="barge-editor-group"><div class="barge-editor-title"><span>'+label+' • '+bargeData[k].length+' kapal</span><button class="barge-add" type="button" onclick="addBarge(\''+k+'\')">＋ Tambah Kapal</button></div>'+(bargeData[k].length?bargeData[k].map((x,i)=>'<div class="barge-edit-row"><input aria-label="Nama kapal" placeholder="Nama kapal" value="'+escBarge(x.name)+'" oninput="updateBarge(\''+k+'\','+i+',\'name\',this.value)"><input aria-label="Jenis muatan" placeholder="Coal GAR 4200" value="'+escBarge(x.cargo)+'" oninput="updateBarge(\''+k+'\','+i+',\'cargo\',this.value)"><input aria-label="Tonase" inputmode="decimal" placeholder="7500" value="'+escBarge(x.ton)+'" oninput="updateBarge(\''+k+'\','+i+',\'ton\',this.value)"><button class="barge-remove" type="button" onclick="removeBarge(\''+k+'\','+i+')" title="Hapus kapal">✕</button></div>').join(''):'<div class="barge-empty">Belum ada kapal. Klik Tambah Kapal.</div>')+'</div>').join('')}
 function openBargeEditor(){renderBargeEditor()}
 function closeBargeEditor(){}
